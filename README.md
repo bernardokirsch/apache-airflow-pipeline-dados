@@ -27,7 +27,7 @@ A proposta é construir um pipeline ETL **completo e automatizado**, entendendo 
 ├── airflow/
 │   ├── config/
 │   ├── dags/
-│   │   ├── etl_api_publica.py 
+│   │   ├── dag_first_etl_pipeline.py 
 │   │   └── ... 
 │   ├── logs/ 
 │   └── plugins/                                     
