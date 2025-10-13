@@ -90,7 +90,7 @@ def load_data(**context):
 
 # Definição da DAG
 with DAG(
-    dag_id='etl_api_publica_dag',
+    dag_id='first_etl_pipeline',
     description='Pipeline ETL simples com Arquitetura Medalhão (Bronze, Silver, Gold)',
     schedule_interval='@daily',
     start_date=datetime(2024, 1, 1),
