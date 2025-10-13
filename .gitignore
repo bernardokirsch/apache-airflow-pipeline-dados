@@ -1,2 +1,7 @@
 .venv 
 __pycache__
+
+# Airflow files
+airflow/config
+airflow/logs
+airflow/plugins
