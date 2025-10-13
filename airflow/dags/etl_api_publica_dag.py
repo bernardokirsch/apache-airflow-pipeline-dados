@@ -4,9 +4,17 @@ from datetime import datetime
 import pandas as pd
 import requests
 import os
+import json
 
-# Caminho base para salvar os dados dentro do container
-DATA_PATH = "/opt/datalake/bronze"
+# Caminhos base dentro do container
+BASE_PATH = "/opt/datalake"
+BRONZE_PATH = os.path.join(BASE_PATH, "bronze")
+SILVER_PATH = os.path.join(BASE_PATH, "silver")
+GOLD_PATH = os.path.join(BASE_PATH, "gold")
+
+# ======================
+# ETAPA 1 - EXTRAÇÃO (BRONZE)
+# ======================
 
 # Função de extração
 def extract_data(**context):
@@ -14,11 +22,28 @@ def extract_data(**context):
     response = requests.get(url)
     response.raise_for_status()
     users = response.json()
-    context['ti'].xcom_push(key='raw_data', value=users)
+
+    os.makedirs(BRONZE_PATH, exist_ok=True)
+    bronze_file = os.path.join(BRONZE_PATH, "usuarios_raw.json")
+
+    # Salva o JSON bruto
+    with open(bronze_file, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False, indent=4)
+
+    print(f"✅ Dados brutos salvos em: {bronze_file}")
+    context['ti'].xcom_push(key='bronze_path', value=bronze_file)
+
+# ======================
+# ETAPA 2 - TRANSFORMAÇÃO (SILVER)
+# ======================
 
 # Função de transformação
 def transform_data(**context):
-    users = context['ti'].xcom_pull(key='raw_data', task_ids='extract')
+    bronze_file = context['ti'].xcom_pull(key='bronze_path', task_ids='extract')
+
+    with open(bronze_file, "r", encoding="utf-8") as f:
+        users = json.load(f)
+
     df = pd.DataFrame(users)
 
     # Seleciona e renomeia colunas relevantes
@@ -35,25 +60,38 @@ def transform_data(**context):
     # Adiciona timestamp de atualização
     df['Data_Atualizacao'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    context['ti'].xcom_push(key='transformed_data', value=df.to_dict(orient='records'))
+    os.makedirs(SILVER_PATH, exist_ok=True)
+    silver_file = os.path.join(SILVER_PATH, "usuarios_clean.csv")
+    df.to_csv(silver_file, index=False, encoding="utf-8-sig")
+
+    print(f"✅ Dados transformados salvos em: {silver_file}")
+    context['ti'].xcom_push(key='silver_path', value=silver_file)
+
+# ======================
+# ETAPA 3 - CARGA FINAL (GOLD)
+# ======================
 
 # Função de carga
 def load_data(**context):
-    data = context['ti'].xcom_pull(key='transformed_data', task_ids='transform')
-    df = pd.DataFrame(data)
+    silver_file = context['ti'].xcom_pull(key='silver_path', task_ids='transform')
+    df = pd.read_csv(silver_file)
 
-    # Garante que o diretório existe
-    os.makedirs(DATA_PATH, exist_ok=True)
+    # Agregação simples (quantidade de registros)
+    resumo = pd.DataFrame({
+        "Total_Usuarios": [len(df)],
+        "Data_Geracao": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
+    })
 
-    output_path = os.path.join(DATA_PATH, "usuarios_relatorio.csv")
-    df.to_csv(output_path, index=False, encoding="utf-8-sig")
+    os.makedirs(GOLD_PATH, exist_ok=True)
+    gold_file = os.path.join(GOLD_PATH, "usuarios_relatorio.csv")
+    resumo.to_csv(gold_file, index=False, encoding="utf-8-sig")
 
-    print(f"✅ Arquivo salvo com sucesso em: {output_path}")
+    print(f"✅ Relatório final salvo em: {gold_file}")
 
 # Definição da DAG
 with DAG(
     dag_id='etl_api_publica_dag',
-    description='Pipeline ETL simples: API pública → Pandas → CSV',
+    description='Pipeline ETL simples com Arquitetura Medalhão (Bronze, Silver, Gold)',
     schedule_interval='@daily',
     start_date=datetime(2024, 1, 1),
     catchup=False,
@@ -63,20 +101,17 @@ with DAG(
 
     extract = PythonOperator(
         task_id='extract',
-        python_callable=extract_data,
-        provide_context=True
+        python_callable=extract_data
     )
 
     transform = PythonOperator(
         task_id='transform',
-        python_callable=transform_data,
-        provide_context=True
+        python_callable=transform_data
     )
 
     load = PythonOperator(
         task_id='load',
-        python_callable=load_data,
-        provide_context=True
+        python_callable=load_data
     )
 
     extract >> transform >> load
