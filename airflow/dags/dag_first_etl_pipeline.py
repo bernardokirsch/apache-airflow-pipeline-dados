@@ -92,7 +92,7 @@ def load_data(**context):
 with DAG(
     dag_id='first_etl_pipeline',
     description='Pipeline ETL simples com Arquitetura Medalhão (Bronze, Silver, Gold)',
-    schedule_interval='@daily',
+    schedule_interval=None, # '@daily'
     start_date=datetime(2024, 1, 1),
     catchup=False,
     default_args={'retries': 1},

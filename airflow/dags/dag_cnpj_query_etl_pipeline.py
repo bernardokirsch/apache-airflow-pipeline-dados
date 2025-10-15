@@ -83,7 +83,7 @@ def load_data(**context):
 with DAG(
     dag_id='cnpj_query_etl_pipeline',
     description='ETL de CNPJs via BrasilAPI',
-    schedule_interval='@daily',
+    schedule_interval=None, # '@daily'
     start_date=datetime(2025, 10, 1),
     catchup=False,
     default_args={'retries': 1},
