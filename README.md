@@ -71,7 +71,7 @@ A proposta é construir um pipeline ETL **completo e automatizado**, entendendo 
 Certifique-se de ter os seguintes itens instalados:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [Python 3.11+](https://www.python.org/downloads/)
+- [Python 3.11](https://www.python.org/downloads/)
 - [Git](https://git-scm.com/downloads)
 - **Windows PowerShell** ou **Linux Bash/WSL**
 
