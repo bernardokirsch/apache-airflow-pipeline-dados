@@ -87,7 +87,7 @@ with DAG(
     start_date=datetime(2025, 10, 1),
     catchup=False,
     default_args={'retries': 3},
-    tags=['ETL', 'API', 'Pandas']
+    tags=["ETL", "API", "Pandas", "BrasilAPI"]
 ) as dag:
 
     extract = PythonOperator(task_id='extract', python_callable=extract_data)
