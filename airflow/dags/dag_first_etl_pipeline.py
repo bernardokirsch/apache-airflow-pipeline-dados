@@ -93,7 +93,7 @@ with DAG(
     dag_id='first_etl_pipeline',
     description='Pipeline ETL simples com Arquitetura Medalhão (Bronze, Silver, Gold)',
     schedule_interval=None, # '@daily'
-    start_date=datetime(2024, 1, 1),
+    start_date=datetime(2025, 11, 6),
     catchup=False,
     default_args={'retries': 3},
     tags=['ETL', 'API', 'Pandas']

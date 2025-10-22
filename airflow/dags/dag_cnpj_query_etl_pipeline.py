@@ -84,7 +84,7 @@ with DAG(
     dag_id='cnpj_query_etl_pipeline',
     description='ETL de CNPJs via BrasilAPI',
     schedule_interval=None, # '@daily'
-    start_date=datetime(2025, 10, 1),
+    start_date=datetime(2025, 11, 6),
     catchup=False,
     default_args={'retries': 3},
     tags=["ETL", "API", "Pandas", "BrasilAPI"]
