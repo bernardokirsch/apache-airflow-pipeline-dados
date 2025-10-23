@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import requests
 import os
@@ -95,7 +95,7 @@ with DAG(
     schedule_interval=None, # '@daily'
     start_date=datetime(2025, 11, 6),
     catchup=False,
-    default_args={'retries': 3},
+    default_args={'retries': 3, 'retry_delay': timedelta(minutes=2)},
     tags=['ETL', 'API', 'Pandas']
 ) as dag:
 

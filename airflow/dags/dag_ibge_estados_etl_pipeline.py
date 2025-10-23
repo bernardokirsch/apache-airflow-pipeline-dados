@@ -87,7 +87,7 @@ with DAG(
     schedule_interval=None,  # '@daily'
     start_date=datetime(2025, 11, 6),
     catchup=False,
-    default_args={"retries": 3},
+    default_args={'retries': 3, 'retry_delay': timedelta(minutes=2)},
     tags=["ETL", "API", "Pandas", "BrasilAPI"]
 ) as dag:
 
