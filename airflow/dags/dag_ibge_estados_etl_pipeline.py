@@ -84,7 +84,7 @@ def load_data(**context):
 with DAG(
     dag_id="ibge_estados_etl_pipeline",
     description="ETL dos estados brasileiros via BrasilAPI (IBGE)",
-    schedule_interval=None,  # '@daily'
+    schedule_interval='@monthly', # '@daily'
     start_date=datetime(2025, 11, 6),
     catchup=False,
     default_args={'retries': 3, 'retry_delay': timedelta(minutes=2)},
