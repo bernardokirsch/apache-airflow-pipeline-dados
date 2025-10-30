@@ -95,7 +95,7 @@ with DAG(
     schedule_interval='@monthly', # '@daily'
     start_date=datetime(2025, 11, 6),
     catchup=False,
-    default_args={'retries': 3, 'retry_delay': timedelta(minutes=2)},
+    default_args={'retries': 3, 'retry_delay': timedelta(minutes=1)},
     tags=['ETL', 'API', 'Pandas']
 ) as dag:
 
