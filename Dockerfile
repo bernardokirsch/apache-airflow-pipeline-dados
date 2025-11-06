@@ -1,7 +1,6 @@
 FROM apache/airflow:2.9.1-python3.11
 
 USER airflow
-COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install pandas requests
 
 ENV PATH="${PATH}:/home/airflow/.local/bin"
