@@ -32,7 +32,7 @@ else {
 
 # 4️⃣ Subir containers Docker
 Write-Host "Subindo containers do Apache Airflow..."
-docker compose up -d
+docker compose up -d --remove-orphans
 
 # 5️⃣ Criar diretórios do datalake
 Write-Host "Criando estrutura de diretórios do datalake..."

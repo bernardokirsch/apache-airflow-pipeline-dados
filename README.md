@@ -91,3 +91,21 @@ cd apache-airflow-pipeline-dados
 # Executar o setup automatizado
 .\setup.ps1
 ```
+
+### 🐧 No Linux (Bash)
+
+```bash
+# Permissão de administrador
+sudo su
+
+# Clonar o repositório
+git clone https://github.com/bernardokirsch/apache-airflow-pipeline-dados.git
+cd apache-airflow-pipeline-dados
+
+# Executar o setup automatizado
+bash setup.sh
+```
+
+## 💻 Acesso do Apache Airflow 
+
+Acesse o Apache Airflow (após a finalização de todos os containers) através seu navegador pelo localhost:8080 (ou 127.0.0.1:8080)

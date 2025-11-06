@@ -1,22 +1,24 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import requests
 import pandas as pd
 import json
 
-# Caminhos base
+# ============================================
+# ============== CONFIGURAÇÕES ===============
+# ============================================
 BASE_PATH = "/opt/datalake"
 BRONZE_PATH = os.path.join(BASE_PATH, "bronze")
 SILVER_PATH = os.path.join(BASE_PATH, "silver")
 GOLD_PATH = os.path.join(BASE_PATH, "gold")
 
-# ======================
-# ETAPA 1 - EXTRAÇÃO (BRONZE)
-# ======================
+# ============================================
+# ======== ETAPA DE EXTRAÇÃO (BRONZE) ========
+# ============================================
 def extract_data(**context):
-    cnpjs = ["60133946000158"] # Lista de CNPJs para consulta
+    cnpjs = ["60133946000158"] 
     data_list = []
 
     for cnpj in cnpjs:
@@ -33,9 +35,9 @@ def extract_data(**context):
     context['ti'].xcom_push(key='bronze_path', value=bronze_file)
     print(f"✅ Dados brutos salvos em: {bronze_file}")
 
-# ======================
-# ETAPA 2 - TRANSFORMAÇÃO (SILVER)
-# ======================
+# =============================================
+# ====== ETAPA DE TRANSFORMAÇÃO (SILVER) ======
+# =============================================
 def transform_data(**context):
     bronze_file = context['ti'].xcom_pull(key='bronze_path', task_ids='extract')
     with open(bronze_file, "r", encoding="utf-8") as f:
@@ -51,7 +53,7 @@ def transform_data(**context):
         'data_inicio_atividade': 'Data_Inicio_Atividade',
         'cnae_fiscal_descricao': 'Descricao_Atividade_Principal'
     }, inplace=True)
-    df['Data_Atualizacao'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    df['Data_Atualizacao'] = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d %H:%M:%S")
 
     os.makedirs(SILVER_PATH, exist_ok=True)
     silver_file = os.path.join(SILVER_PATH, "cnpj_clean.csv")
@@ -60,9 +62,9 @@ def transform_data(**context):
     context['ti'].xcom_push(key='silver_path', value=silver_file)
     print(f"✅ Dados transformados salvos em: {silver_file}")
 
-# ======================
-# ETAPA 3 - CARGA FINAL (GOLD)
-# ======================
+# =============================================
+# ======== ETAPA DE CARGA FINAL (GOLD) ========
+# =============================================
 def load_data(**context):
     silver_file = context['ti'].xcom_pull(key='silver_path', task_ids='transform')
     df = pd.read_csv(silver_file)
@@ -77,13 +79,13 @@ def load_data(**context):
     resumo.to_csv(gold_file, index=False, encoding="utf-8-sig")
     print(f"✅ Relatório final salvo em: {gold_file}")
 
-# ======================
-# DAG
-# ======================
+# ============================================
+# =================== DAG ====================
+# ============================================
 with DAG(
     dag_id='cnpj_query_etl_pipeline',
     description='ETL de CNPJs via BrasilAPI',
-    schedule_interval='@monthly', # '@daily'
+    schedule_interval='@daily',
     start_date=datetime(2025, 11, 6),
     catchup=False,
     default_args={'retries': 3, 'retry_delay': timedelta(minutes=1)},

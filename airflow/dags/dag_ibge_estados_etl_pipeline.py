@@ -6,17 +6,17 @@ import requests
 import pandas as pd
 import json
 
-# ======================
-# CONFIGURAÇÕES
-# ======================
+# ============================================
+# ============== CONFIGURAÇÕES ===============
+# ============================================
 BASE_PATH = "/opt/datalake"
 BRONZE_PATH = os.path.join(BASE_PATH, "bronze")
 SILVER_PATH = os.path.join(BASE_PATH, "silver")
 GOLD_PATH = os.path.join(BASE_PATH, "gold")
 
-# ======================
-# ETAPA 1 - EXTRAÇÃO (BRONZE)
-# ======================
+# ============================================
+# ======== ETAPA DE EXTRAÇÃO (BRONZE) ========
+# ============================================
 def extract_data(**context):
     url = "https://brasilapi.com.br/api/ibge/uf/v1"
     response = requests.get(url)
@@ -32,9 +32,9 @@ def extract_data(**context):
     context["ti"].xcom_push(key="bronze_path", value=bronze_file)
     print(f"✅ Dados brutos salvos em: {bronze_file}")
 
-# ======================
-# ETAPA 2 - TRANSFORMAÇÃO (SILVER)
-# ======================
+# =============================================
+# ====== ETAPA DE TRANSFORMAÇÃO (SILVER) ======
+# =============================================
 def transform_data(**context):
     bronze_file = context["ti"].xcom_pull(key="bronze_path", task_ids="extract")
     with open(bronze_file, "r", encoding="utf-8") as f:
@@ -59,9 +59,9 @@ def transform_data(**context):
     context["ti"].xcom_push(key="silver_path", value=silver_file)
     print(f"✅ Dados transformados salvos em: {silver_file}")
 
-# ======================
-# ETAPA 3 - CARGA FINAL (GOLD)
-# ======================
+# =============================================
+# ======== ETAPA DE CARGA FINAL (GOLD) ========
+# =============================================
 def load_data(**context):
     silver_file = context["ti"].xcom_pull(key="silver_path", task_ids="transform")
     df = pd.read_csv(silver_file)
@@ -78,13 +78,13 @@ def load_data(**context):
 
     print(f"✅ Relatório final salvo em: {gold_file}")
 
-# ======================
-# DAG
-# ======================
+# ============================================
+# =================== DAG ====================
+# ============================================
 with DAG(
     dag_id="ibge_estados_etl_pipeline",
     description="ETL dos estados brasileiros via BrasilAPI (IBGE)",
-    schedule_interval='@monthly', # '@daily'
+    schedule_interval='@daily',
     start_date=datetime(2025, 11, 6),
     catchup=False,
     default_args={'retries': 3, 'retry_delay': timedelta(minutes=1)},

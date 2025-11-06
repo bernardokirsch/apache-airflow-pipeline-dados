@@ -7,7 +7,13 @@ set -e
 # ================================================
 
 # Executar no Linux (Bash)
-# ./setup.sh
+# bash setup.sh
+
+# 0️⃣ Atualizando pacotes do sistema e instalando dependências básicas
+echo "🔄 Atualizando pacotes do sistema..."
+
+sudo apt update
+sudo apt install -y python3.11-venv python3.11-distutils
 
 echo "🚀 Iniciando setup do ambiente..."
 
@@ -22,7 +28,7 @@ fi
 
 # 2️⃣ Ativar ambiente virtual
 echo "🔗 Ativando ambiente virtual..."
-source .venv/Scripts/activate
+source .venv/bin/activate
 
 # 3️⃣ Instalar dependências
 if [ -f "requirements.txt" ]; then
@@ -34,7 +40,7 @@ fi
 
 # 4️⃣ Subir containers Docker
 echo "🐳 Subindo containers do Apache Airflow..."
-docker compose up -d
+docker compose up -d --remove-orphans
 
 # 5️⃣ Criar diretórios do datalake
 echo "🗂️ Criando estrutura de diretórios do datalake..."
